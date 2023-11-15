@@ -1,0 +1,34 @@
+.NavBar{
+    height: 64px;
+    background-color: white;
+    display: grid;
+	align-items: center;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
+}
+
+.MainIcon{
+    color: #0070cc;
+    font-size: 50px;
+    margin: 5px;
+}
+ul{
+    width: 100%;
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+.NavBar li{
+    list-style-type: none;
+    display: inline-block;
+    margin: 5px;
+}
+
+.logButton{
+    background-color: #0070cc;
+    border-radius: 100px;
+    color: white;
+    height: 40px;
+    border-color: white;
+}

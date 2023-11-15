@@ -1,0 +1,11 @@
+.Nav {
+    background-color: black;
+    height: 50px;
+    color: white;
+    display: grid;
+	align-items: center;
+}
+
+.title{
+    margin: 5px;
+}
