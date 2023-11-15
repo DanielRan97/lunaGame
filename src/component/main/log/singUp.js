@@ -4,8 +4,9 @@ import classes from "./singUp.module.css";
 import WithClass from "../../../hoc/withClass/withClass";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../../../firebase/firebase';
 import { useNavigate } from "react-router-dom";
+import { logInWithGoogle, loginUser, signUpUser } from '../../../firebase/firebaseFunc'; // Import the functions
+
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -19,8 +20,30 @@ const SignUp = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+\w+$/;
         return emailRegex.test(mail);
     };
-    
+
     const navigate = useNavigate();
+
+    const handleSignUp = async () => {
+        setErrorMessageMail('');
+        setErrorMessagePass('');
+        setSignFailedMessage('');
+
+        if (isValidEmail(email)) {
+          if (password.length >= 8) {
+            try {
+              await signUpUser(email, password).then(() => {
+                navigate('/');
+              });
+            } catch (error) {
+              setSignFailedMessage(error.message);
+            }
+          } else {
+            setErrorMessagePass("Password needs to be more than 8 characters");
+          }
+        } else {
+          setErrorMessageMail("Invalid email");
+        }
+      };
 
 
     const handleLogin = async () => {
@@ -29,44 +52,26 @@ const SignUp = () => {
         setSignFailedMessage('');
 
         if (isValidEmail(email)) {
-            if (password.length >= 8) {
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    console.log('User login up successfully!');
-                    navigate('/')
-                } catch (error) {
-                    setSignFailedMessage("login up failed, check your internet or try to sign up if you didn't create account");
-                    console.error('Error signing up:', error.message);
-                }
-            } else {
-                setErrorMessagePass("Password needs to be more than 8 characters");
+          if (password.length >= 8) {
+            try {
+              await loginUser(email, password);
+              navigate('/');
+            } catch (error) {
+              setSignFailedMessage(error.message);
             }
+          } else {
+            setErrorMessagePass("Password needs to be more than 8 characters");
+          }
         } else {
-            setErrorMessageMail("Invalid email");
+          setErrorMessageMail("Invalid email");
         }
-    };
+      };
 
-    const handleSignUp = async () => {
-        setErrorMessageMail('');
-        setErrorMessagePass('');
-        setSignFailedMessage('');
-
-        if (isValidEmail(email)) {
-            if (password.length >= 8) {
-                try {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    console.log('User signed up successfully!');
-                } catch (error) {
-                    setSignFailedMessage("Sign up in failed, check your internet or try to log in if your account already exists");
-                    console.error('Error signing in:', error.message);
-                }
-            } else {
-                setErrorMessagePass("Password needs to be more than 8 characters");
-            }
-        } else {
-            setErrorMessageMail("Invalid email");
-        }
-    };
+      const googleLogIn = () => {
+        logInWithGoogle().then(() => {
+            navigate('/')
+        });
+      };
 
     return (
         <Aux>
@@ -93,6 +98,10 @@ const SignUp = () => {
                 <div className={classes.logButtonDiv}>
                     <Button variant="primary" onClick={logAction === true ? handleLogin : handleSignUp} disabled={!isValidEmail(email) || password.length < 8}>
                     {logAction? "Log in" : "Sign up"}
+                    </Button>
+
+                    <Button variant="danger" onClick={googleLogIn}>
+                    Log in With GOOGLE
                     </Button>
                 </div>
                 <p className={classes.errorMessage}>{signFailedMessage}</p>

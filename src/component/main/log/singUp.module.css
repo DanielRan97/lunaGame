@@ -39,3 +39,9 @@
 .changeLogLi:active{
     color: blue;
 }
+
+.logButtonDiv{
+    display: flex;
+    gap: 13px;
+    justify-content: center;
+}
