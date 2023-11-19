@@ -1,0 +1,9 @@
+.ModalPopUp{
+    text-align: center;
+    color: black;
+}
+
+.ModalPopUpButton{
+    width: 40%;
+    margin: 3px auto 3px auto;
+}

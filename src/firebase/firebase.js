@@ -1,10 +1,12 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, 
+import { getAuth,
         createUserWithEmailAndPassword,
         signInWithEmailAndPassword,
         GoogleAuthProvider,
-        signInWithPopup
-        }
+        signInWithPopup,
+        signOut,
+        sendPasswordResetEmail,
+        getAdditionalUserInfo }
 from 'firebase/auth';
 
 const firebaseConfig = {
@@ -14,9 +16,18 @@ const firebaseConfig = {
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BYCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGINSENDERID,
   appId: process.env.REACT_APP_FIREBASE_APPID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENTID
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENTID,
+
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-export { auth,createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup };
+
+export { auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  sendPasswordResetEmail,
+  getAdditionalUserInfo };

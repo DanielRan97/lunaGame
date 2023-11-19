@@ -1,114 +1,131 @@
 import { useState } from "react";
-import Aux from "../../../hoc/Auxiliary/Auxiliary";
-import classes from "./singUp.module.css";
-import WithClass from "../../../hoc/withClass/withClass";
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
-import { logInWithGoogle, loginUser, signUpUser } from '../../../firebase/firebaseFunc'; // Import the functions
-
+import {
+  logInWithGoogle,
+  loginUser,
+  resetPasswordMail,
+  signUpUser,
+} from "../../../firebase/firebaseFunc";
+import Aux from "../../../hoc/Auxiliary/Auxiliary";
+import WithClass from "../../../hoc/withClass/withClass";
+import classes from "./singUp.module.css";
+import LogForm from "./logForms/logForm";
+import ForgetPassForm from "./forgetPassForm/forgetPassForm";
+import ModalPopUp from "../../UI/modal/modal";
 
 const SignUp = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [errorMessageMail, setErrorMessageMail] = useState('');
-    const [errorMessagePass, setErrorMessagePass] = useState('');
-    const [signFailedMessage, setSignFailedMessage] = useState('');
-    const [logAction, setSignLogAction] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessageMail, setErrorMessageMail] = useState("");
+  const [errorMessagePass, setErrorMessagePass] = useState("");
+  const [signFailedMessage, setSignFailedMessage] = useState("");
+  const [logAction, setSignLogAction] = useState(true);
+  const [forgetPass, setForgetPass] = useState(false);
+  const [modalShow, setModalShow] = useState(false);
+  const [modalText, setModalText] = useState('');
 
-    const isValidEmail = (mail) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+\w+$/;
-        return emailRegex.test(mail);
-    };
+  const isValidEmail = (mail) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+\w+$/;
+    return emailRegex.test(mail);
+  };
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleSignUp = async () => {
-        setErrorMessageMail('');
-        setErrorMessagePass('');
-        setSignFailedMessage('');
+  const handleAuthentication = async () => {
+    setErrorMessageMail("");
+    setErrorMessagePass("");
+    setSignFailedMessage("");
 
-        if (isValidEmail(email)) {
-          if (password.length >= 8) {
-            try {
-              await signUpUser(email, password).then(() => {
-                navigate('/');
-              });
-            } catch (error) {
-              setSignFailedMessage(error.message);
-            }
-          } else {
-            setErrorMessagePass("Password needs to be more than 8 characters");
-          }
-        } else {
-          setErrorMessageMail("Invalid email");
-        }
-      };
+    if (!isValidEmail(email)) {
+      setErrorMessageMail("Invalid email");
+      return;
+    }
 
+    if (password.length < 8) {
+      setErrorMessagePass("Password needs to be more than 8 characters");
+      return;
+    }
 
-    const handleLogin = async () => {
-        setErrorMessageMail('');
-        setErrorMessagePass('');
-        setSignFailedMessage('');
+    try {
+      if (logAction) {
+        await signUpUser(email, password);
+      } else {
+        await loginUser(email, password);
+      }
+      navigate("/");
+    } catch (error) {
+      setSignFailedMessage(error.message);
+    }
+  };
 
-        if (isValidEmail(email)) {
-          if (password.length >= 8) {
-            try {
-              await loginUser(email, password);
-              navigate('/');
-            } catch (error) {
-              setSignFailedMessage(error.message);
-            }
-          } else {
-            setErrorMessagePass("Password needs to be more than 8 characters");
-          }
-        } else {
-          setErrorMessageMail("Invalid email");
-        }
-      };
+  const googleLogIn = async () => {
+    try {
+      await logInWithGoogle();
+      navigate("/");
+    } catch (error) {
+      setModalShow(true);
+      setModalText("Google Login Failed");
+    }
+  };
 
-      const googleLogIn = () => {
-        logInWithGoogle().then(() => {
-            navigate('/')
-        });
-      };
+  const sendResetPassMail = async () => {
+    try {
+      await resetPasswordMail(email);
+      setModalShow(true);
+      setModalText("Email sent, change your password and return to log in, if you didn't get email make sure you sign up before change password or you did'nt type correct the email");
+    } catch (error) {
+        setModalShow(true);
+        setModalText('failed to send rest password mail check your internet connection or try sign up');
+    }
+  }
 
-    return (
-        <Aux>
-            <Form className={classes.logForm}>
-                <h1 className={classes.logTitle}>{logAction? "Log in" : "Sign up"}</h1>
-                <label>
-                    <Form.Group className="mb-3" controlId="formBasicEmail" >
-                        <Form.Label>Email address</Form.Label>
-                        <Form.Control type="email" placeholder="Enter email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <p className={classes.logP}>
-                            We'll never share your email with anyone else.
-                        </p>
-                        <p className={classes.errorMessage}>{errorMessageMail}</p>
-                    </Form.Group>
-                </label>
+  const logForm = (
+    <LogForm
+      logAction={logAction}
+      loginUser={loginUser}
+      signUpUser={signUpUser}
+      logInWithGoogle={logInWithGoogle}
+      googleLogIn={googleLogIn}
+      handleAuthentication={handleAuthentication}
+      email={email}
+      errorMessageMail={errorMessageMail}
+      errorMessagePass={errorMessagePass}
+      signFailedMessage={signFailedMessage}
+      setEmail={setEmail}
+      password={password}
+      setPassword={setPassword}
+      setSignLogAction={setSignLogAction}
+      isValidEmail={isValidEmail}
+      setForgetPass={setForgetPass}
+    />
+  );
 
-                <label>
-                    <Form.Group className="mb-3" controlId="formBasicPassword">
-                        <Form.Label>Password</Form.Label>
-                        <Form.Control type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                        <p className={classes.errorMessage}>{errorMessagePass}</p>
-                    </Form.Group>
-                </label>
-                <div className={classes.logButtonDiv}>
-                    <Button variant="primary" onClick={logAction === true ? handleLogin : handleSignUp} disabled={!isValidEmail(email) || password.length < 8}>
-                    {logAction? "Log in" : "Sign up"}
-                    </Button>
+  const forgetPassForm =
+      <ForgetPassForm
+      email={email}
+      setEmail={setEmail}
+      isValidEmail={isValidEmail}
+      setForgetPass={setForgetPass}
+      sendResetPassMail={sendResetPassMail}
+      errorMessagePass={errorMessagePass}
+      />;
 
-                    <Button variant="danger" onClick={googleLogIn}>
-                    Log in With GOOGLE
-                    </Button>
-                </div>
-                <p className={classes.errorMessage}>{signFailedMessage}</p>
-                <li className={classes.changeLogLi} onClick={() => setSignLogAction(logAction === true ? false : true)}>{logAction === false ? "Already have account ?" : "don't have account yet?"}</li>
-            </Form>
-        </Aux>
-    );
+      const modal = () => {
+        return(
+          modalText!== '' ? <ModalPopUp modalShow={modalShow} modalText={modalText} setModalText={setModalText}></ModalPopUp> : undefined
+
+        )
+      }
+
+  return (
+
+  <Aux>
+
+    {forgetPass === false ? logForm : forgetPassForm}
+    {modal()}
+    </Aux>
+  
+  );
 };
 
 export default WithClass(SignUp, classes.SignUp);
